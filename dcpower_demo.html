@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DCPower-ICS Testbed — Baseline Detector Demo</title>
+<style>
+:root{
+  --bg:#0b0f14;--panel:#111820;--panel2:#17212b;--line:#263342;--text:#eef4f8;--muted:#8aa0b4;
+  --ok:#2dd4bf;--warn:#f5b942;--bad:#ef476f;--blue:#63a7ff;--violet:#b68cff;--white:#ffffff;
+  --grid:#95a3b3;--gen:#46d39a;--batt:#55c7ff;--load:#f7c66a;--ups:#d7ecff;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+button{font:inherit}
+.app{display:grid;grid-template-rows:auto 1fr;height:100vh}
+.top{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:#0d131a}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.title{font-weight:800;font-size:16px;white-space:nowrap}
+.msg{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mode{padding:7px 10px;border:1px solid var(--line);background:var(--panel2);border-radius:6px;font-weight:700;color:var(--ok);white-space:nowrap}
+.icon-btn{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:6px;padding:7px 9px;cursor:pointer}
+.icon-btn:hover{border-color:var(--ok);color:var(--text)}
+.main{display:grid;grid-template-columns:300px minmax(520px,1fr) 400px;min-height:0}
+.left,.right{overflow:auto;border-right:1px solid var(--line);background:#0d131a}
+.right{border-right:0;border-left:1px solid var(--line)}
+.section{padding:12px;border-bottom:1px solid var(--line)}
+.label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:8px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:10px;min-height:72px}
+.kpi b{display:block;font-size:22px;margin-top:5px}.kpi span{font-size:11px;color:var(--muted)}
+.center{display:grid;grid-template-rows:minmax(360px,52%) 1fr;min-height:0;overflow:hidden}
+.diagram{position:relative;border-bottom:1px solid var(--line);background:#081017;overflow:hidden}
+svg{width:100%;height:100%;display:block}
+.bus{stroke:#dbeafe;stroke-width:9;stroke-linecap:round}
+.wire{stroke:#6f8194;stroke-width:4;fill:none}
+.tap{stroke:#6f8194;stroke-width:3;stroke-dasharray:8 8}
+.flow{stroke-dasharray:10 8;animation:flow .8s linear infinite}
+.off{opacity:.18;animation:none}
+.alarm-stroke{stroke:var(--bad)!important;filter:drop-shadow(0 0 9px rgba(239,71,111,.55))}
+.source{color:#dbeafe}
+.source .symbol-outline{fill:#101923;stroke:#314154;stroke-width:2.4}
+.source .symbol-line{fill:none;stroke:#dbeafe;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.source .symbol-fill{fill:#101923;stroke:#314154;stroke-width:2.4}
+.source.active .symbol-outline,.source.active .symbol-fill{stroke:var(--ok);filter:drop-shadow(0 0 7px rgba(45,212,191,.45))}
+.source.alarm-stroke .symbol-outline,.source.alarm-stroke .symbol-fill,.source.alarm-stroke .symbol-line{stroke:var(--bad)!important;filter:drop-shadow(0 0 9px rgba(239,71,111,.55))}
+.zone{fill:#0c151d;stroke:#182534;stroke-width:1}
+.breaker-blade{stroke:#dbeafe;stroke-width:4;stroke-linecap:round}
+.meter-tag{fill:#0b131b;stroke:#1f2d3b;stroke-width:1.4}
+text{fill:var(--text);font-size:13px;font-weight:650}
+.tiny{fill:var(--muted);font-size:10px;font-weight:600}
+.read{font-family:"SFMono-Regular",Consolas,monospace;fill:var(--ok);font-size:12px;font-weight:700}
+.warnfill{fill:var(--warn)}.badfill{fill:var(--bad)}
+.zone-label{fill:#70859b;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.equipment-label{font-size:12px;fill:#dce7f0}
+.symbol-letter{font-size:24px;font-weight:800;fill:#dbeafe}
+@keyframes flow{from{stroke-dashoffset:18}to{stroke-dashoffset:0}}
+/* Bottom panels */
+.bottom{display:grid;grid-template-columns:1fr 1fr;min-height:0}
+.panel{overflow:auto;padding:12px;border-right:1px solid var(--line)}.panel:last-child{border-right:0}
+/* Detector grid */
+.detector-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+.det-card{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px;text-align:center;transition:border-color .3s,background .3s}
+.det-card.detecting{border-color:var(--bad)!important;background:rgba(239,71,111,.12)!important}
+.det-card.detecting .det-name{color:#ffd9e2}
+.det-card.dormant{border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.04)}
+.det-name{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:3px}
+.det-score{font-family:"SFMono-Regular",Consolas,monospace;font-size:16px;font-weight:800;color:var(--ok)}
+.det-label{font-size:9px;color:var(--muted);margin-top:2px}
+/* Scenario list */
+.list{display:grid;gap:7px}
+.row{padding:9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);font-size:12px;line-height:1.35}
+.row strong{display:block;margin-bottom:3px}.muted{color:var(--muted)}
+.scenario{display:grid;gap:5px}
+.scenario-group{margin-top:8px}
+.scenario button{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:6px;padding:7px 9px;cursor:pointer;text-align:left;width:100%;font-size:12px;transition:border-color .15s,background .15s}
+.scenario button:hover{border-color:#45817a;color:var(--text);background:#0f2420}
+.scenario button.active{border-color:var(--bad);color:#ffd9e2;background:rgba(239,71,111,.14)}
+.scenario button small{display:block;color:var(--muted);margin-top:2px;font-size:10px}
+/* Trend */
+.trend{height:180px;background:var(--panel);border:1px solid var(--line);border-radius:7px;margin-top:8px}
+/* Attack status banner */
+.attack-banner{display:none;margin-bottom:8px;padding:8px 10px;border-radius:6px;border:1px solid var(--bad);background:rgba(239,71,111,.12);font-size:12px;font-weight:700;color:#ffd9e2}
+.attack-banner.visible{display:block}
+/* Score bar */
+.bars{display:grid;gap:7px}
+.bar{display:grid;grid-template-columns:130px 1fr 48px;align-items:center;gap:8px;font-size:12px}
+.track{height:8px;background:#0b1118;border-radius:4px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--ok);border-radius:4px;transition:width .3s}
+.fill.warn{background:var(--warn)}.fill.bad{background:var(--bad)}
+.tooltip{position:fixed;z-index:50;max-width:340px;padding:12px 13px;border:1px solid #314154;border-radius:8px;background:#101923;color:var(--text);box-shadow:0 18px 45px rgba(0,0,0,.45);pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;font-size:12px;line-height:1.42}
+.tooltip.visible{opacity:1;transform:translateY(0)}
+.tooltip strong{display:block;font-size:13px;margin-bottom:5px;color:#fff}
+.tooltip .tip-kicker{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ok);font-weight:800;margin-bottom:4px}
+.tooltip .tip-row{margin-top:7px;color:var(--muted)}
+.tooltip .tip-row b{color:#cfe2ef}
+.has-tip{cursor:help}
+@media(max-width:1100px){body{overflow:auto}.app{height:auto}.main{grid-template-columns:1fr}.left,.right{border:0}.center{grid-template-rows:420px auto}.bottom{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div>
+        <div class="title">DCPower-ICS Testbed — Baseline Anomaly Detection Demo</div>
+        <div class="msg">Inject any of 22 attack scenarios and watch 5 unsupervised detectors respond in real time. All detectors trained on normal plant data only.</div>
+      </div>
+      <div id="mode" class="mode">loading</div>
+    </div>
+    <button class="icon-btn" title="Reset to normal operation" onclick="resetDemo()">↺ Reset</button>
+  </header>
+  <main class="main">
+    <!-- LEFT: status + detector scores -->
+    <aside class="left">
+      <div class="section">
+        <div class="label">Plant Status</div>
+        <div class="kpis">
+          <div class="kpi"><span>Power source</span><b id="source" style="font-size:15px">--</b></div>
+          <div class="kpi"><span>Active scenario</span><b id="sc-name" style="font-size:13px;color:var(--warn)">None</b></div>
+          <div class="kpi"><span>Detectors alarming</span><b id="alarm-count" style="color:var(--bad)">0 / 5</b></div>
+          <div class="kpi"><span>Tick</span><b id="tick-val" style="font-size:18px">0</b></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="label">Detector Scores (normalised)</div>
+        <div id="score-bars" class="bars"></div>
+      </div>
+      <div class="section">
+        <div class="label">Asset Status</div>
+        <div id="asset-list" class="list"></div>
+      </div>
+      <div class="section">
+        <div class="label">Load Split</div>
+        <div id="load-list" class="list"></div>
+      </div>
+    </aside>
+
+    <!-- CENTER: schematic + trend -->
+    <section class="center">
+      <div class="diagram">
+        <svg viewBox="0 0 1180 600" aria-label="one-line power diagram">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 10 5 0 10z" fill="#45d2be"/></marker>
+          </defs>
+          <rect class="zone" x="24" y="38" width="248" height="172" rx="10"/>
+          <text class="zone-label" x="42" y="64">Utility feed</text>
+          <rect class="zone" x="300" y="38" width="840" height="172" rx="10"/>
+          <text class="zone-label" x="318" y="64">Main switchgear and site controller</text>
+          <rect class="zone" x="300" y="246" width="840" height="306" rx="10"/>
+          <text class="zone-label" x="318" y="272">Data-center loads, UPS, and backup assets</text>
+
+          <line id="flow-grid" class="wire flow" x1="155" y1="126" x2="330" y2="126" marker-end="url(#arrow)"/>
+          <line class="bus" x1="340" y1="126" x2="1055" y2="126"/>
+          <line class="tap" x1="460" y1="126" x2="460" y2="315"/>
+          <line id="flow-cool" class="wire flow" x1="585" y1="132" x2="585" y2="330" marker-end="url(#arrow)"/>
+          <line id="flow-ups" class="wire flow" x1="755" y1="132" x2="755" y2="322" marker-end="url(#arrow)"/>
+          <line id="flow-noncrit" class="wire flow" x1="925" y1="132" x2="925" y2="330" marker-end="url(#arrow)"/>
+          <line id="flow-it" class="wire flow" x1="755" y1="398" x2="755" y2="472" marker-end="url(#arrow)"/>
+          <path id="flow-gen1" class="wire flow" d="M154 462 L265 392 L460 392 L460 132" marker-end="url(#arrow)"/>
+          <path id="flow-gen2" class="wire flow" d="M302 462 L398 392 L460 392 L460 132" marker-end="url(#arrow)"/>
+          <path id="flow-bess" class="wire flow" d="M1070 462 L1070 126" marker-end="url(#arrow)"/>
+
+          <g id="utility" class="source active">
+            <circle class="symbol-outline" cx="112" cy="126" r="42"/>
+            <path class="symbol-line" d="M78 126 c13 -26 25 26 38 0 s25 -26 38 0"/>
+            <path class="symbol-line" d="M52 180 L78 82 L112 180 M172 180 L146 82 L112 180 M75 124 H149 M66 154 H158"/>
+            <text class="equipment-label" x="112" y="32" text-anchor="middle">Utility Grid</text>
+            <rect class="meter-tag" x="61" y="188" width="102" height="28" rx="5"/>
+            <text id="pcc-read" class="read" x="112" y="207" text-anchor="middle">-- kW</text>
+          </g>
+
+          <g id="pcc" class="source">
+            <circle class="symbol-line" cx="334" cy="126" r="8"/>
+            <circle class="symbol-line" cx="382" cy="126" r="8"/>
+            <line class="breaker-blade" x1="342" y1="121" x2="374" y2="97"/>
+            <text class="equipment-label" x="358" y="80" text-anchor="middle">PCC Breaker</text>
+            <rect class="meter-tag" x="325" y="150" width="66" height="27" rx="5"/>
+            <text id="pcc-state" class="tiny" x="358" y="168" text-anchor="middle">closed</text>
+          </g>
+
+          <g id="busbox" class="source active">
+            <text class="equipment-label" x="705" y="88" text-anchor="middle">Main Switchgear Bus</text>
+            <text id="bus-read" class="read" x="705" y="111" text-anchor="middle">-- V / -- Hz</text>
+            <circle class="symbol-line" cx="460" cy="126" r="5"/>
+            <circle class="symbol-line" cx="585" cy="126" r="5"/>
+            <circle class="symbol-line" cx="755" cy="126" r="5"/>
+            <circle class="symbol-line" cx="925" cy="126" r="5"/>
+            <circle class="symbol-line" cx="1070" cy="126" r="5"/>
+          </g>
+
+          <g id="ats" class="source">
+            <rect class="symbol-outline" x="388" y="308" width="144" height="86" rx="8"/>
+            <circle class="symbol-line" cx="430" cy="352" r="6"/>
+            <circle class="symbol-line" cx="490" cy="326" r="6"/>
+            <circle class="symbol-line" cx="490" cy="378" r="6"/>
+            <line class="symbol-line" x1="436" y1="350" x2="482" y2="329"/>
+            <text class="equipment-label" x="460" y="336" text-anchor="middle">ATS</text>
+            <text class="tiny" x="460" y="354" text-anchor="middle">Paralleling</text>
+            <text id="ats-read" class="read" x="460" y="378" text-anchor="middle">UTILITY</text>
+          </g>
+
+          <g id="gen1" class="source">
+            <circle class="symbol-outline" cx="154" cy="462" r="44"/>
+            <text class="symbol-letter" x="154" y="470" text-anchor="middle">G</text>
+            <path class="symbol-line" d="M128 442 c10 -16 18 16 28 0 s18 -16 28 0" opacity=".75"/>
+            <text class="equipment-label" x="154" y="527" text-anchor="middle">Generator 1</text>
+            <text id="gen1-read" class="read" x="154" y="547" text-anchor="middle">-- kW</text>
+          </g>
+
+          <g id="gen2" class="source">
+            <circle class="symbol-outline" cx="302" cy="462" r="44"/>
+            <text class="symbol-letter" x="302" y="470" text-anchor="middle">G</text>
+            <path class="symbol-line" d="M276 442 c10 -16 18 16 28 0 s18 -16 28 0" opacity=".75"/>
+            <text class="equipment-label" x="302" y="527" text-anchor="middle">Generator 2</text>
+            <text id="gen2-read" class="read" x="302" y="547" text-anchor="middle">-- kW</text>
+          </g>
+
+          <g id="cooling" class="source">
+            <circle class="symbol-outline" cx="585" cy="350" r="43"/>
+            <circle class="symbol-line" cx="585" cy="350" r="7"/>
+            <path class="symbol-line" d="M585 343 C610 318 626 331 603 349 M592 354 C627 363 621 382 590 365 M578 354 C552 379 537 365 567 348"/>
+            <text class="equipment-label" x="585" y="414" text-anchor="middle">Cooling Load</text>
+            <text id="cool-read" class="read" x="585" y="434" text-anchor="middle">-- kW</text>
+          </g>
+
+          <g id="ups" class="source">
+            <rect class="symbol-outline" x="687" y="312" width="136" height="86" rx="8"/>
+            <rect class="symbol-fill" x="704" y="334" width="42" height="38" rx="4"/>
+            <rect class="symbol-fill" x="764" y="334" width="42" height="38" rx="4"/>
+            <line class="symbol-line" x1="746" y1="353" x2="764" y2="353"/>
+            <text class="tiny" x="725" y="357" text-anchor="middle">AC/DC</text>
+            <text class="tiny" x="785" y="357" text-anchor="middle">DC/AC</text>
+            <text class="equipment-label" x="755" y="300" text-anchor="middle">UPS</text>
+            <text id="ups-read" class="read" x="755" y="421" text-anchor="middle">ONLINE</text>
+          </g>
+
+          <g id="it" class="source">
+            <rect class="symbol-outline" x="710" y="472" width="90" height="70" rx="6"/>
+            <line class="symbol-line" x1="727" y1="488" x2="783" y2="488"/>
+            <line class="symbol-line" x1="727" y1="505" x2="783" y2="505"/>
+            <line class="symbol-line" x1="727" y1="522" x2="783" y2="522"/>
+            <circle cx="735" cy="488" r="2.5" fill="#2dd4bf"/>
+            <circle cx="735" cy="505" r="2.5" fill="#2dd4bf"/>
+            <circle cx="735" cy="522" r="2.5" fill="#2dd4bf"/>
+            <text class="equipment-label" x="755" y="458" text-anchor="middle">Critical IT</text>
+            <text id="it-read" class="read" x="755" y="565" text-anchor="middle">-- kW</text>
+          </g>
+
+          <g id="noncrit" class="source">
+            <rect class="symbol-outline" x="880" y="320" width="90" height="68" rx="8"/>
+            <path class="symbol-line" d="M910 334 v20 M940 334 v20 M900 354 h50 v13 c0 15 -12 26 -25 26 s-25 -11 -25 -26 z"/>
+            <line class="symbol-line" x1="925" y1="393" x2="925" y2="407"/>
+            <text class="equipment-label" x="925" y="305" text-anchor="middle">Shed-able Load</text>
+            <text id="noncrit-read" class="read" x="925" y="430" text-anchor="middle">-- kW</text>
+          </g>
+
+          <g id="bess" class="source">
+            <rect class="symbol-outline" x="1018" y="418" width="104" height="74" rx="8"/>
+            <rect class="symbol-fill" x="1122" y="444" width="12" height="22" rx="2"/>
+            <line class="symbol-line" x1="1040" y1="438" x2="1040" y2="472"/>
+            <line class="symbol-line" x1="1058" y1="446" x2="1058" y2="464"/>
+            <line class="symbol-line" x1="1078" y1="438" x2="1078" y2="472"/>
+            <line class="symbol-line" x1="1096" y1="446" x2="1096" y2="464"/>
+            <text class="equipment-label" x="1070" y="408" text-anchor="middle">BESS / UPS Battery</text>
+            <text id="bess-read" class="read" x="1070" y="520" text-anchor="middle">--%</text>
+          </g>
+        </svg>
+      </div>
+      <div class="bottom">
+        <div class="panel">
+          <div class="label">Detector Status</div>
+          <div id="attack-banner" class="attack-banner">⚠ Attack scenario active — watching detectors</div>
+          <div id="detector-grid" class="detector-grid"></div>
+          <div class="label" style="margin-top:8px">Detection History (this scenario)</div>
+          <div id="detection-log" class="list" style="font-size:11px;max-height:120px;overflow:auto"></div>
+        </div>
+        <div class="panel">
+          <div class="label">Trend Explorer</div>
+          <canvas id="trend" class="trend" width="520" height="180"></canvas>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">
+            <span style="color:#ef476f">●</span> Alarm score &nbsp;
+            <span style="color:#55c7ff">●</span> BESS SOC &nbsp;
+            <span style="color:#46d39a">●</span> Gen kW &nbsp;
+            <span style="color:#f7c66a">●</span> Total load
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: scenario buttons -->
+    <aside class="right">
+      <div class="section">
+        <div class="label">About the Detectors</div>
+        <div class="row"><strong>5 Unsupervised Baselines</strong>
+          <span class="muted">All trained on normal plant data only. Scores are normalised relative to the normal training distribution. A score above the threshold (dotted line) constitutes a detection.</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px">
+          <div class="row" style="font-size:11px"><strong style="color:#63a7ff">IForest</strong><span class="muted">Isolation Forest</span></div>
+          <div class="row" style="font-size:11px"><strong style="color:#b68cff">OCSVM</strong><span class="muted">One-Class SVM</span></div>
+          <div class="row" style="font-size:11px"><strong style="color:#46d39a">LOF</strong><span class="muted">Local Outlier Factor</span></div>
+          <div class="row" style="font-size:11px"><strong style="color:#f7c66a">PCA</strong><span class="muted">PCA Reconstruction</span></div>
+          <div class="row" style="font-size:11px"><strong style="color:#2dd4bf">AE</strong><span class="muted">AutoEncoder MLP</span></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="label">Scenario Control — click to inject</div>
+        <div id="scenarios" class="scenario"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+const API = location.origin;
+const DETECTORS = ['IForest','OCSVM','LOF','PCA','AE'];
+const DET_COLORS = {IForest:'#63a7ff',OCSVM:'#b68cff',LOF:'#46d39a',PCA:'#f7c66a',AE:'#2dd4bf'};
+let state=null, trend=[], detectionLog=[], activeScenario=null;
+const fmt=(v,d=0)=>Number(v||0).toFixed(d);
+
+function post(path,body={}){return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json())}
+
+async function inject(code){
+  activeScenario=code;
+  detectionLog=[];
+  document.getElementById('detection-log').innerHTML='<div class="row muted">Waiting for detections...</div>';
+  await post('/inject',{scenario:code});
+  document.querySelectorAll('.scenario button').forEach(b=>b.classList.toggle('active',b.dataset.code===code));
+}
+
+async function resetDemo(){
+  activeScenario=null;
+  detectionLog=[];
+  clearDiagramWarnings();
+  await post('/reset');
+  document.querySelectorAll('.scenario button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('attack-banner').classList.remove('visible');
+  document.getElementById('sc-name').textContent='None';
+  document.getElementById('detection-log').innerHTML='';
+}
+
+function clearDiagramWarnings(){
+  ['utility','pcc','busbox','cooling','ups','it','noncrit','ats','gen1','gen2','bess']
+    .forEach(id=>document.getElementById(id)?.classList.remove('alarm-stroke'));
+}
+
+function markAlarmAssets(detectors, sensors){
+  // Mark assets based on which detectors are alarming and sensor patterns
+  const alarming = detectors.some(d=>d.alarming);
+  if(!alarming) return;
+  const s = sensors||{};
+  if(Math.abs((s.BESS_P||0))>50||Math.abs((s.BESS_SOC||50)-50)>15) document.getElementById('bess').classList.add('alarm-stroke');
+  if((s.PCC_P||0)<100) document.getElementById('pcc').classList.add('alarm-stroke');
+  if((s.GEN1_P||0)>200) document.getElementById('gen1').classList.add('alarm-stroke');
+  if((s.GEN2_P||0)>200) document.getElementById('gen2').classList.add('alarm-stroke');
+  if((s.UPS_bypass||0)>0.5) document.getElementById('ups').classList.add('alarm-stroke');
+  if((s.bus_voltage||480)<465) document.getElementById('busbox').classList.add('alarm-stroke');
+}
+
+function setText(id,text){const el=document.getElementById(id);if(el)el.textContent=text;}
+function cls(id,on){document.getElementById(id)?.classList.toggle('active',!!on)}
+
+function renderDiagram(p){
+  const s=p.sensors;
+  clearDiagramWarnings();
+  setText('mode', p.mode_banner||p.mode||'--');
+  setText('source', p.source_of_power||'--');
+  setText('tick-val', p.tick||0);
+  setText('pcc-read', fmt(s.PCC_P)+' kW');
+  setText('pcc-state', s.PCC_breaker>0.5?'closed':'open');
+  setText('bus-read', fmt(s.bus_voltage,1)+' V / '+fmt(s.bus_frequency,2)+' Hz');
+  setText('cool-read', fmt(s.P_cooling)+' kW');
+  setText('ups-read', s.UPS_mode||'--');
+  setText('it-read', fmt(s.P_IT)+' kW');
+  setText('noncrit-read', fmt(s.P_noncritical)+' kW');
+  setText('ats-read', s.ATS_state||'--');
+  setText('gen1-read', fmt(s.GEN1_P)+' kW');
+  setText('gen2-read', fmt(s.GEN2_P)+' kW');
+  setText('bess-read', fmt(s.BESS_SOC,1)+'% / '+fmt(s.BESS_P)+' kW');
+  cls('utility', s.PCC_P>25);
+  cls('gen1', s.GEN1_P>35);
+  cls('gen2', s.GEN2_P>35);
+  cls('bess', Math.abs(s.BESS_P||0)>20);
+  ['flow-grid','flow-gen1','flow-gen2','flow-bess','flow-cool','flow-noncrit','flow-ups','flow-it']
+    .forEach(id=>document.getElementById(id)?.classList.remove('off'));
+  if(s.PCC_P<25) document.getElementById('flow-grid').classList.add('off');
+  if(s.GEN1_P<35) document.getElementById('flow-gen1').classList.add('off');
+  if(s.GEN2_P<35) document.getElementById('flow-gen2').classList.add('off');
+  if(Math.abs(s.BESS_P||0)<20) document.getElementById('flow-bess').classList.add('off');
+}
+
+function renderDetectors(dets, scenario){
+  const alarmCount = dets.filter(d=>d.alarming).length;
+  setText('alarm-count', alarmCount+' / '+DETECTORS.length);
+  setText('sc-name', scenario||'None');
+  document.getElementById('attack-banner').classList.toggle('visible', !!scenario);
+
+  // Detector cards
+  const grid = document.getElementById('detector-grid');
+  grid.innerHTML = dets.map(d=>`
+    <div class="det-card ${d.alarming?'detecting':'dormant'}">
+      <div class="det-name" style="color:${DET_COLORS[d.name]||'#8aa0b4'}">${d.name}</div>
+      <div class="det-score" style="color:${d.alarming?'#ef476f':(DET_COLORS[d.name]||'var(--ok)')}">${fmt(d.norm_score,2)}</div>
+      <div class="det-label">${d.alarming?'⚠ ALARM':'● normal'}</div>
+    </div>`).join('');
+
+  // Score bars
+  const bars = document.getElementById('score-bars');
+  bars.innerHTML = dets.map(d=>{
+    const pct = Math.min(100, d.norm_score * 40);
+    const cls = d.alarming?'bad': d.norm_score>1.5?'warn':'';
+    return `<div class="bar">
+      <span style="color:${DET_COLORS[d.name]||'#8aa0b4'}">${d.name}</span>
+      <div class="track"><div class="fill ${cls}" style="width:${pct}%"></div></div>
+      <span style="color:${d.alarming?'#ef476f':'var(--muted)'}">${fmt(d.norm_score,2)}</span>
+    </div>`;
+  }).join('');
+
+  // Detection log (when scenario active and detector fires for first time)
+  if(scenario){
+    const now = Date.now();
+    dets.filter(d=>d.alarming).forEach(d=>{
+      if(!detectionLog.find(e=>e.name===d.name)){
+        detectionLog.push({name:d.name,time:now,score:d.norm_score});
+        const log=document.getElementById('detection-log');
+        log.innerHTML=detectionLog.map(e=>`
+          <div class="row" style="border-color:rgba(239,71,111,.5);font-size:11px">
+            <strong style="color:${DET_COLORS[e.name]||'#8aa0b4'}">${e.name} detected</strong>
+            <span class="muted">score=${fmt(e.score,2)} at t+${Math.round((e.time-detectionLog[0].time)/1000)}s</span>
+          </div>`).join('');
+      }
+    });
+  }
+  markAlarmAssets(dets, null);
+}
+
+function renderAssets(p){
+  const s=p.sensors;
+  document.getElementById('asset-list').innerHTML=[
+    ['Utility/PCC',s.PCC_breaker>0.5?'closed':'open'],
+    ['ATS',s.ATS_state||'--'],
+    ['Gen 1',s.GEN1_running?'running':'standby'],
+    ['Gen 2',s.GEN2_running?'running':'standby'],
+    ['UPS',s.UPS_mode||'--'],
+    ['Battery',s.BESS_state||'--']
+  ].map(x=>`<div class="row"><strong>${x[0]}</strong><span class="muted">${x[1]}</span></div>`).join('');
+  document.getElementById('load-list').innerHTML=[
+    ['Critical IT', fmt(s.P_IT)+' kW'],
+    ['Cooling', fmt(s.P_cooling)+' kW'],
+    ['Shed-able', fmt(s.P_noncritical)+' kW']
+  ].map(x=>`<div class="row"><strong>${x[0]}</strong><span class="muted">${x[1]}</span></div>`).join('');
+}
+
+function renderTrend(points){
+  const c=document.getElementById('trend');
+  const ctx=c.getContext('2d');
+  const w=c.width,h=c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#111820';
+  ctx.fillRect(0,0,w,h);
+  if(points.length<2) return;
+  const last=points.slice(-160);
+  const maxLoad=Math.max(...last.map(p=>(p.it_kw||0)+(p.cooling_kw||0)+(p.noncritical_kw||0)),1000);
+  const series=[['alarm_score','#ef476f',5],['bess_soc','#55c7ff',100],['gen_kw','#46d39a',1800],['load','#f7c66a',maxLoad]];
+  last.forEach(p=>p.load=(p.it_kw||0)+(p.cooling_kw||0)+(p.noncritical_kw||0));
+  // grid lines
+  ctx.strokeStyle='#263342';ctx.lineWidth=1;
+  for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(0,h*i/4);ctx.lineTo(w,h*i/4);ctx.stroke();}
+  // attack shading
+  const attackSegs=[];let inAtk=false,start=0;
+  last.forEach((p,i)=>{
+    if(p.scenario&&!inAtk){inAtk=true;start=i}
+    if(!p.scenario&&inAtk){inAtk=false;attackSegs.push([start,i])}
+  });
+  if(inAtk) attackSegs.push([start,last.length-1]);
+  ctx.fillStyle='rgba(239,71,111,.12)';
+  attackSegs.forEach(([a,b])=>{
+    const x1=a/(last.length-1)*w, x2=b/(last.length-1)*w;
+    ctx.fillRect(x1,0,x2-x1,h);
+  });
+  // series lines
+  series.forEach(([key,color,max])=>{
+    ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();
+    last.forEach((p,i)=>{
+      let x=i/(last.length-1)*w, y=h-(Math.min(max,Math.max(0,p[key]||0))/max)*h;
+      if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);
+    });
+    ctx.stroke();
+  });
+}
+
+function renderScenarios(groups){
+  const labels={maintenance:'Maintenance errors',configuration:'Commissioning / configuration faults',operations:'Operational disturbances',cyber:'Cyber-like / data integrity'};
+  document.getElementById('scenarios').innerHTML=Object.entries(groups).map(([g,items])=>
+    `<div class="scenario-group"><div class="label">${labels[g]||g}</div>${
+      items.map(x=>`<button data-code="${x.code}" onclick="inject('${x.code}')">
+        ${x.title}<small>${x.category}</small>
+      </button>`).join('')
+    }</div>`
+  ).join('');
+}
+
+function render(p){
+  state=p;
+  trend.push({...( p.trend_point||{})});
+  if(trend.length>300) trend=trend.slice(-300);
+  renderDiagram(p);
+  renderDetectors(p.detectors||[], p.scenario_code||null);
+  renderAssets(p);
+  renderTrend(p.trend||trend);
+}
+
+// Init scenario list
+fetch(API+'/scenarios').then(r=>r.json()).then(x=>renderScenarios(x.groups));
+
+// SSE stream
+const es=new EventSource(API+'/stream');
+es.onmessage=e=>render(JSON.parse(e.data));
+es.onerror=()=>fetch(API+'/stream_latest').then(r=>r.ok?r.json():null).then(p=>p&&render(p));
+
+// Tooltip
+function showTip(html,event){const t=document.getElementById('tooltip');t.innerHTML=html;t.classList.add('visible');moveTip(event)}
+function moveTip(event){const t=document.getElementById('tooltip');if(!t.classList.contains('visible'))return;const pad=14,w=t.offsetWidth||300,h=t.offsetHeight||120;let x=event.clientX+16,y=event.clientY+16;if(x+w+pad>window.innerWidth)x=event.clientX-w-16;if(y+h+pad>window.innerHeight)y=event.clientY-h-16;t.style.left=Math.max(pad,x)+'px';t.style.top=Math.max(pad,y)+'px'}
+function hideTip(){document.getElementById('tooltip').classList.remove('visible')}
+</script>
+</body>
+</html>
