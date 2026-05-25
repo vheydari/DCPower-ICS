@@ -1,8 +1,8 @@
 # DCPower-ICS: A Labeled ICS Dataset for Data Center Power Infrastructure
 
-[![Scientific Data](https://img.shields.io/badge/Scientific%20Data-under%20review-blue)]()
-[![Zenodo Dataset](https://img.shields.io/badge/Data-Zenodo-green)]()
-[![Code License: MIT](https://img.shields.io/badge/Code%20License-MIT-yellow.svg)](LICENSE)
+[![Zenodo Dataset](https://img.shields.io/badge/Data-Zenodo-green)](https://doi.org/10.5281/zenodo.20358617)
+[![Zenodo Code](https://img.shields.io/badge/Code%20DOI-Zenodo-blue)](https://doi.org/10.5281/zenodo.20358593)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-online-brightgreen)](http://157.151.204.244:5003/)
 
 **DCPower-ICS** is a fully synthetic labeled ICS anomaly detection benchmark for data center power infrastructure, covering utility feed, PCC breaker, ATS, backup generators, BESS, UPS, IT load, cooling load, and sheddable load in a reduced-order physics-informed simulator.
 
@@ -91,13 +91,18 @@ The default threshold is the 95th percentile of training anomaly scores (`--cont
 
 ## Live Demo
 
+An optional live demo is available at:
+
+**http://157.151.204.244:5003/**
+
 The live demo uses the same simulator and five baseline detectors. Each browser session receives an isolated simulation state.
+
+> **Note:** The live demo is provided as a non-archival illustration only. It is not required to reproduce the dataset, validation checks, or baseline results. For reproducibility, use the Zenodo dataset DOI and the archived code release described in the paper.
+
+To run the demo locally:
 
 ```bash
 python api_server_baselines.py --data-dir dcpower_dataset --host 127.0.0.1 --port 5003
-```
-
-For Render/Heroku-like deployment, the included `Procfile` starts the same Flask server.
 
 ## License
 
