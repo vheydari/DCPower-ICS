@@ -1,0 +1,17 @@
+[
+  {
+    "file": "dcpower_test.csv",
+    "bytes": 22170891,
+    "verified_md5": "a39eb4006f9f5e71a8e62e77856af11b"
+  },
+  {
+    "file": "dcpower_meta.json",
+    "bytes": 41062,
+    "verified_md5": "f3bf2f527201d9c5cdb6f32e258b9cf6"
+  },
+  {
+    "file": "dcpower_train.csv",
+    "bytes": 21883305,
+    "verified_md5": "245163a482d584e57acacca130310249"
+  }
+]

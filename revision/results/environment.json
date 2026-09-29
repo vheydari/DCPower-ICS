@@ -1,0 +1,66 @@
+{
+  "python": "3.12.14",
+  "numpy": "2.3.5",
+  "pandas": "2.2.3",
+  "sklearn": "1.9.1",
+  "excluded": [
+    "utility_available",
+    "utility_degraded",
+    "PCC_breaker",
+    "PCC_breaker_cmd",
+    "GEN1_cmd",
+    "GEN2_cmd",
+    "GEN1_running",
+    "GEN2_running",
+    "GEN1_ready",
+    "GEN2_ready",
+    "GEN1_fault",
+    "GEN2_fault",
+    "GEN1_breaker",
+    "GEN2_breaker",
+    "UPS_bypass",
+    "BESS_cmd",
+    "load_shed_stage",
+    "maintenance_bypass"
+  ],
+  "measurements": [
+    "GEN1_P",
+    "GEN2_P",
+    "GEN1_Q",
+    "GEN2_Q",
+    "GEN1_f",
+    "GEN2_f",
+    "GEN1_V",
+    "GEN2_V",
+    "UPS_in_P",
+    "UPS_out_P",
+    "BESS_P",
+    "BESS_SOC",
+    "BESS_current",
+    "P_IT",
+    "P_cooling",
+    "P_noncritical",
+    "bus_voltage",
+    "bus_frequency",
+    "PCC_P",
+    "PCC_Q",
+    "PCC_I",
+    "ambient_c"
+  ],
+  "detector_seed": 42,
+  "data_seeds": [
+    42,
+    123,
+    777
+  ],
+  "data_sha256": {
+    "dcpower_train.csv": "bc6b40df915dd477bcfaee441d619a7d2bae3c992764b987c17892af6f4e6d14",
+    "dcpower_meta.json": "5721497b490c0055e05f80c8d9fbc087e163d9b67208b48bbff7020ac1253ad5",
+    "dcpower_test.csv": "c43a3797b90b6598e731422ef629370694ca1e47a8c9f945fb02df202c1d486b"
+  },
+  "code_sha256": {
+    "plant_model.py": "23696ae2bdd87fba3f502cd20dad83a02b6906cfc9557d3aedcdc26ebb84f460",
+    "generate_dataset.py": "5bfc19ed5385c75e5af4ceb1a0d79aab0015cd77da023404c4489a9d20b096a0",
+    "scenario_library.py": "c948ef019ffea12bb03fb11efdfca9e34cca8fdb0a2e0fc3857d41d764eb490d"
+  }
+}

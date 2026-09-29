@@ -1,0 +1,17 @@
+{
+  "target": 0.01,
+  "selection_seed": 42,
+  "normal_rows": 53054,
+  "positive_budget": 535,
+  "positive_rows": 535,
+  "actual_prevalence": 0.009983392114053257,
+  "selected_event_indices": [
+    54,
+    89,
+    124,
+    38,
+    227
+  ],
+  "scenario_coverage": 5,
+  "independent_blocks": 250
+}

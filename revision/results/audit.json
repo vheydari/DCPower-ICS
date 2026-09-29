@@ -1,0 +1,427 @@
+{
+  "train": {
+    "rows": 86400,
+    "columns": 43,
+    "missing": 0,
+    "duplicate_timestamps": 0,
+    "dt": [
+      1.0
+    ],
+    "positive_rows": 0,
+    "ranges": {
+      "utility_available": [
+        0.0,
+        1.0
+      ],
+      "utility_degraded": [
+        0.0,
+        1.0
+      ],
+      "PCC_breaker": [
+        1.0,
+        1.0
+      ],
+      "PCC_breaker_cmd": [
+        1.0,
+        1.0
+      ],
+      "GEN1_cmd": [
+        0.0,
+        1.0
+      ],
+      "GEN2_cmd": [
+        0.0,
+        1.0
+      ],
+      "GEN1_running": [
+        0.0,
+        1.0
+      ],
+      "GEN2_running": [
+        0.0,
+        1.0
+      ],
+      "GEN1_ready": [
+        1.0,
+        1.0
+      ],
+      "GEN2_ready": [
+        1.0,
+        1.0
+      ],
+      "GEN1_fault": [
+        0.0,
+        0.0
+      ],
+      "GEN2_fault": [
+        0.0,
+        0.0
+      ],
+      "GEN1_breaker": [
+        0.0,
+        1.0
+      ],
+      "GEN2_breaker": [
+        0.0,
+        1.0
+      ],
+      "GEN1_P": [
+        -8.352,
+        537.806
+      ],
+      "GEN2_P": [
+        -8.107,
+        539.475
+      ],
+      "GEN1_Q": [
+        0.0,
+        96.419
+      ],
+      "GEN2_Q": [
+        0.0,
+        96.419
+      ],
+      "GEN1_f": [
+        59.627,
+        60.074
+      ],
+      "GEN2_f": [
+        59.62,
+        60.076
+      ],
+      "GEN1_V": [
+        455.024,
+        481.965
+      ],
+      "GEN2_V": [
+        455.117,
+        481.98
+      ],
+      "UPS_bypass": [
+        0.0,
+        1.0
+      ],
+      "UPS_in_P": [
+        550.011,
+        828.085
+      ],
+      "UPS_out_P": [
+        533.191,
+        799.102
+      ],
+      "BESS_cmd": [
+        -130.0,
+        240.775
+      ],
+      "BESS_P": [
+        -160.014,
+        250.544
+      ],
+      "BESS_SOC": [
+        38.568,
+        80.165
+      ],
+      "BESS_current": [
+        -3.445,
+        345.665
+      ],
+      "P_IT": [
+        533.203,
+        799.672
+      ],
+      "P_cooling": [
+        131.027,
+        248.105
+      ],
+      "P_noncritical": [
+        42.571,
+        141.335
+      ],
+      "load_shed_stage": [
+        0.0,
+        1.0
+      ],
+      "bus_voltage": [
+        455.556,
+        481.502
+      ],
+      "bus_frequency": [
+        59.628,
+        60.066
+      ],
+      "PCC_P": [
+        -6.894,
+        1269.483
+      ],
+      "PCC_Q": [
+        -0.729,
+        314.927
+      ],
+      "PCC_I": [
+        0.196,
+        1581.642
+      ],
+      "ambient_c": [
+        21.0,
+        29.0
+      ],
+      "maintenance_bypass": [
+        0.0,
+        1.0
+      ]
+    },
+    "power_residual_kw": {
+      "min": -771.364,
+      "max": 224.64800000000005,
+      "mean": 0.23518516203703627,
+      "negative_fraction": 0.8685185185185185
+    },
+    "ups_ratio": {
+      "min": 0.9649983718544402,
+      "max": 1.0228077094462742
+    },
+    "generator_abs_step_max_kw": {
+      "GEN1_P": 115.771,
+      "GEN2_P": 116.77199999999999
+    }
+  },
+  "test": {
+    "rows": 86400,
+    "columns": 43,
+    "missing": 0,
+    "duplicate_timestamps": 0,
+    "dt": [
+      1.0
+    ],
+    "positive_rows": 33346,
+    "ranges": {
+      "utility_available": [
+        0.0,
+        1.0
+      ],
+      "utility_degraded": [
+        0.0,
+        1.0
+      ],
+      "PCC_breaker": [
+        0.0,
+        1.0
+      ],
+      "PCC_breaker_cmd": [
+        0.0,
+        1.0
+      ],
+      "GEN1_cmd": [
+        0.0,
+        1.0
+      ],
+      "GEN2_cmd": [
+        0.0,
+        1.0
+      ],
+      "GEN1_running": [
+        0.0,
+        1.0
+      ],
+      "GEN2_running": [
+        0.0,
+        1.0
+      ],
+      "GEN1_ready": [
+        1.0,
+        1.0
+      ],
+      "GEN2_ready": [
+        1.0,
+        1.0
+      ],
+      "GEN1_fault": [
+        0.0,
+        0.0
+      ],
+      "GEN2_fault": [
+        0.0,
+        0.0
+      ],
+      "GEN1_breaker": [
+        0.0,
+        1.0
+      ],
+      "GEN2_breaker": [
+        0.0,
+        1.0
+      ],
+      "GEN1_P": [
+        -7.249,
+        561.204
+      ],
+      "GEN2_P": [
+        -7.357,
+        558.538
+      ],
+      "GEN1_Q": [
+        0.0,
+        100.953
+      ],
+      "GEN2_Q": [
+        0.0,
+        100.953
+      ],
+      "GEN1_f": [
+        59.618,
+        60.428
+      ],
+      "GEN2_f": [
+        59.618,
+        60.429
+      ],
+      "GEN1_V": [
+        456.696,
+        481.341
+      ],
+      "GEN2_V": [
+        456.89,
+        481.502
+      ],
+      "UPS_bypass": [
+        0.0,
+        1.0
+      ],
+      "UPS_in_P": [
+        108.827,
+        828.277
+      ],
+      "UPS_out_P": [
+        527.874,
+        799.288
+      ],
+      "BESS_cmd": [
+        -390.0,
+        379.288
+      ],
+      "BESS_P": [
+        -411.647,
+        560.906
+      ],
+      "BESS_SOC": [
+        36.904,
+        83.436
+      ],
+      "BESS_current": [
+        -5.363,
+        780.96
+      ],
+      "P_IT": [
+        530.729,
+        799.775
+      ],
+      "P_cooling": [
+        132.199,
+        284.712
+      ],
+      "P_noncritical": [
+        12.997,
+        139.721
+      ],
+      "load_shed_stage": [
+        0.0,
+        2.0
+      ],
+      "bus_voltage": [
+        456.71,
+        481.272
+      ],
+      "bus_frequency": [
+        59.628,
+        60.422
+      ],
+      "PCC_P": [
+        -7.196,
+        1463.018
+      ],
+      "PCC_Q": [
+        -25.059,
+        337.685
+      ],
+      "PCC_I": [
+        0.005,
+        1680.088
+      ],
+      "ambient_c": [
+        21.0,
+        29.0
+      ],
+      "maintenance_bypass": [
+        0.0,
+        1.0
+      ]
+    },
+    "power_residual_kw": {
+      "min": -1271.5349999999999,
+      "max": 822.1780000000001,
+      "mean": -57.75703724537037,
+      "negative_fraction": 0.9402893518518518
+    },
+    "ups_ratio": {
+      "min": 0.9649983935729461,
+      "max": 5.345882161163536
+    },
+    "generator_abs_step_max_kw": {
+      "GEN1_P": 117.666,
+      "GEN2_P": 118.50299999999999
+    }
+  },
+  "metadata_keys": [
+    "dataset_name",
+    "version",
+    "description",
+    "generation",
+    "splits",
+    "columns",
+    "scenario_catalogue",
+    "train_maintenance_log",
+    "test_attack_log"
+  ],
+  "events": {
+    "generator_test": {
+      "n": 15,
+      "rows": 8538
+    },
+    "ups_bypass": {
+      "n": 18,
+      "rows": 1612
+    },
+    "load_shed_test": {
+      "n": 26,
+      "rows": 2284
+    }
+  },
+  "fault_duration": [
+    90.0,
+    180.0
+  ],
+  "scenario_counts": {
+    "BREAKER_POSITION_MISMATCH": 12,
+    "WRONG_ATS_TIMING": 12,
+    "UPS_BYPASS_STUCK": 12,
+    "WRONG_BATT_SETPOINT": 12,
+    "ATS_SLOW_TRANSFER": 12,
+    "STEALTH_GEN_BIAS": 12,
+    "PCC_METER_BIAS": 12,
+    "BREAKER_STATUS_SPOOF": 12,
+    "GEN_EFF_LOSS": 12,
+    "LOAD_SHED_MISCONFIG": 12,
+    "UNSCHEDULED_BLACK_START": 12,
+    "GEN_START_DELAY": 12,
+    "COOLING_EFF_LOSS": 11,
+    "BUS_VOLTAGE_FREEZE": 11,
+    "SOC_CAL_DRIFT": 11,
+    "POWER_METER_SPOOF": 11,
+    "GRID_DISTURBANCE": 11,
+    "COORDINATED_MASKING": 11,
+    "FALSE_HEALTHY_SUBSYSTEM": 11,
+    "BYPASS_LEFT_ENABLED": 11,
+    "BATTERY_DEGRADATION": 11,
+    "SWAPPED_SENSOR_MAPPING": 11
+  }
+}

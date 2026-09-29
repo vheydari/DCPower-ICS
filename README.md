@@ -1,7 +1,7 @@
 # DCPower-ICS: A Labeled ICS Dataset for Data Center Power Infrastructure
 
-[![Zenodo Dataset](https://img.shields.io/badge/Data-Zenodo-green)](https://doi.org/10.5281/zenodo.20358617)
-[![Zenodo Code](https://img.shields.io/badge/Code%20DOI-Zenodo-blue)](https://doi.org/10.5281/zenodo.20358593)
+[![Zenodo Dataset](https://img.shields.io/badge/Data-Zenodo-green)](https://doi.org/10.5281/zenodo.20358618)
+[![Zenodo Code](https://img.shields.io/badge/Code%20DOI-Zenodo-blue)](https://doi.org/10.5281/zenodo.20358594)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-online-brightgreen)](http://157.151.204.244:5003/)
 
 **DCPower-ICS** is a fully synthetic labeled ICS anomaly detection benchmark for data center power infrastructure, covering utility feed, PCC breaker, ATS, backup generators, BESS, UPS, IT load, cooling load, and sheddable load in a reduced-order physics-informed simulator.
@@ -51,7 +51,7 @@ dcpower-ics/
 ```text
 dcpower_dataset/
 ├── dcpower_train.csv      # 86,400 rows; all label=0; includes planned maintenance windows
-├── dcpower_test.csv       # 86,400 rows; pure normal windows + labeled fault windows
+├── dcpower_test.csv       # 86,400 rows; normal windows + labeled fault windows
 └── dcpower_meta.json      # dataset card, scenario catalogue, event logs, generation parameters
 ```
 
@@ -61,7 +61,7 @@ Each CSV has 43 columns: `timestamp`, 40 numeric process variables, `label`, and
 
 DCPower-ICS follows the two-part design described in the manuscript:
 
-1. **Fault detection:** the test split alternates pure grid-connected normal windows and labeled fault/anomaly windows. Test normal windows do not include planned maintenance events.
+1. **Fault detection:** the test split alternates normal windows and labeled fault/anomaly windows. Test normal windows do not include scheduled maintenance, but may contain recovery from prior scenarios.
 2. **Maintenance robustness:** planned generator load tests, UPS bypass windows, and load shed drills appear in the training split and are labeled normal. These windows can be used to evaluate maintenance-mode false-alarm behavior.
 
 ## Scenario Catalogue
@@ -70,10 +70,10 @@ The dataset includes 22 labeled fault/anomaly scenarios across four categories:
 
 | Category | Scenarios |
 |---|---|
-| Maintenance error | `GEN_EFF_LOSS`, `GEN_START_DELAY`, `BATTERY_DEGRADATION`, `SOC_CAL_DRIFT`, `COOLING_EFF_LOSS`, `UPS_BYPASS_STUCK` |
-| Commissioning fault | `WRONG_ATS_TIMING`, `WRONG_BATT_SETPOINT`, `LOAD_SHED_MISCONFIG`, `SWAPPED_SENSOR_MAPPING`, `BYPASS_LEFT_ENABLED`, `BREAKER_POSITION_MISMATCH` |
-| Cyber-physical | `BREAKER_STATUS_SPOOF`, `POWER_METER_SPOOF`, `PCC_METER_BIAS`, `BUS_VOLTAGE_FREEZE`, `COORDINATED_MASKING`, `STEALTH_GEN_BIAS` |
-| Operational disturbance | `GRID_DISTURBANCE`, `UNSCHEDULED_BLACK_START`, `ATS_SLOW_TRANSFER`, `FALSE_HEALTHY_SUBSYSTEM` |
+| Maintenance (archived metadata) | `GEN_EFF_LOSS`, `GEN_START_DELAY`, `BREAKER_POSITION_MISMATCH`, `ATS_SLOW_TRANSFER`, `BATTERY_DEGRADATION`, `SOC_CAL_DRIFT`, `COOLING_EFF_LOSS`, `PCC_METER_BIAS`, `BUS_VOLTAGE_FREEZE`, `UPS_BYPASS_STUCK` |
+| Configuration (archived metadata) | `WRONG_ATS_TIMING`, `WRONG_BATT_SETPOINT`, `LOAD_SHED_MISCONFIG`, `SWAPPED_SENSOR_MAPPING`, `BYPASS_LEFT_ENABLED` |
+| Cyber (archived metadata) | `BREAKER_STATUS_SPOOF`, `POWER_METER_SPOOF`, `COORDINATED_MASKING`, `STEALTH_GEN_BIAS`, `FALSE_HEALTHY_SUBSYSTEM` |
+| Operations (archived metadata) | `GRID_DISTURBANCE`, `UNSCHEDULED_BLACK_START` |
 
 Planned maintenance events are not fault scenarios and are labeled normal.
 
@@ -87,7 +87,15 @@ Planned maintenance events are not fault scenarios and are labeled normal.
 - PCA reconstruction
 - MLP AutoEncoder
 
-The default threshold is the 95th percentile of training anomaly scores (`--contamination 0.05`). These results are intended as technical validation/sanity checks, not optimized leaderboard claims.
+The default threshold is the 95th percentile of fitting anomaly scores (`--contamination 0.05`): full training for Isolation Forest/PCA/MLP, and deterministic 10,000/20,000-row fitting subsets for SVM/LOF. The archived per-scenario CSV column named `f1` actually reports segment recall; the revision results use the explicit name `segment_recall`. These results are intended as technical validation/sanity checks, not optimized leaderboard claims.
+
+## Revision analyses and scope
+
+See [`revision/README.md`](revision/README.md) for the measurement-only maintenance ablation, physical diagnostics, and whole-event 1–5% evaluation subsets. The original simulator and dataset-generation files are unchanged. The new scripts read the deposited data; the three-seed analysis also generates supplementary training traces in memory without replacing the deposited files.
+
+The simulator is fully synthetic and not calibrated to a facility. Frequency/voltage are algebraic heuristics, without swing/governor/AVR dynamics. Exact bus power balance is not enforced. The maintenance ATS timer resets each step; the nominal generator startup delay is zero. Labels mark scenario activation rather than a validated physical cause; `FALSE_HEALTHY_SUBSYSTEM` has no direct effect on exported numeric channels and the two breaker scenarios share an implementation. These limitations exclude physical transient, protection, power-quality, or standards-compliance validation. Maintenance FAR depends on feature selection and calibration and does not establish a novel unsolved detection problem.
+
+Version-specific dataset: https://doi.org/10.5281/zenodo.20358618 (concept: 20358617). Original archived code: https://doi.org/10.5281/zenodo.20358594 (concept: 20358593). These code DOIs identify the original release, not the newly added revision analysis folder.
 
 ## Live Demo
 
@@ -103,6 +111,7 @@ To run the demo locally:
 
 ```bash
 python api_server_baselines.py --data-dir dcpower_dataset --host 127.0.0.1 --port 5003
+```
 
 ## License
 
